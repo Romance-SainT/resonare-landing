@@ -1,0 +1,211 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Resonare — 실시간 원격 합주 · 한국 P2P</title>
+<meta name="description" content="한국 스트리머를 위한 초저지연 원격 합주 앱. P2P 직결 + 서울 릴레이 폴백 + ASIO. 싱크룸의 핑·연결 문제를 한국에서 해결합니다." />
+<meta property="og:title" content="Resonare — 실시간 원격 합주" />
+<meta property="og:description" content="국내 P2P 직결 + 서울 릴레이 폴백 + ASIO 초저지연. 최대 10명 함께 합주." />
+<style>
+  :root{
+    --bg:#0e1014; --panel:#171a21; --panel2:#1e222b; --line:#2a2f3a;
+    --txt:#e8ecf3; --dim:#8a93a6; --accent:#5ad1c4; --accent2:#7c6cff;
+    --good:#46d39a; --warn:#f2c14e;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  body{background:var(--bg);color:var(--txt);font-family:"Malgun Gothic","Segoe UI",-apple-system,system-ui,sans-serif;line-height:1.6;overflow-x:hidden}
+  a{color:inherit;text-decoration:none}
+  .wrap{max-width:1120px;margin:0 auto;padding:0 24px}
+  .grad{background:linear-gradient(100deg,var(--accent),var(--accent2));-webkit-background-clip:text;background-clip:text;color:transparent}
+  .btn{display:inline-flex;align-items:center;gap:8px;padding:13px 24px;border-radius:12px;font-weight:700;font-size:15px;cursor:pointer;border:1px solid transparent;transition:.18s}
+  .btn-primary{background:linear-gradient(100deg,var(--accent),var(--accent2));color:#0a0d12}
+  .btn-primary:hover{filter:brightness(1.08);transform:translateY(-1px)}
+  .btn-ghost{background:var(--panel2);border-color:var(--line);color:var(--txt)}
+  .btn-ghost:hover{border-color:var(--accent)}
+  .eyebrow{color:var(--accent);font-weight:700;font-size:13px;letter-spacing:2px;text-transform:uppercase}
+
+  /* nav */
+  nav{position:sticky;top:0;z-index:50;backdrop-filter:blur(12px);background:rgba(14,16,20,.72);border-bottom:1px solid var(--line)}
+  nav .wrap{display:flex;align-items:center;justify-content:space-between;height:64px}
+  .logo{font-weight:800;font-size:22px;letter-spacing:.5px}
+  .navlinks{display:flex;gap:28px;align-items:center}
+  .navlinks a{color:var(--dim);font-size:14px;font-weight:600;transition:.15s}
+  .navlinks a:hover{color:var(--txt)}
+  @media(max-width:720px){.navlinks a:not(.navcta){display:none}}
+
+  /* hero */
+  .hero{position:relative;padding:96px 0 72px;text-align:center;overflow:hidden}
+  .hero::before{content:"";position:absolute;inset:0;background:
+    radial-gradient(620px 320px at 50% -10%,rgba(124,108,255,.22),transparent 70%),
+    radial-gradient(520px 300px at 80% 10%,rgba(90,209,196,.16),transparent 70%);pointer-events:none}
+  .hero h1{font-size:clamp(44px,8vw,86px);font-weight:800;letter-spacing:-1px;line-height:1.02}
+  .hero .tag{margin-top:18px;font-size:clamp(17px,2.4vw,22px);color:var(--txt);font-weight:600}
+  .hero .sub{margin:18px auto 0;max-width:640px;color:var(--dim);font-size:16px}
+  .hero .cta{margin-top:34px;display:flex;gap:14px;justify-content:center;flex-wrap:wrap}
+  .pill{display:inline-flex;gap:8px;align-items:center;margin-top:30px;padding:7px 16px;border:1px solid var(--line);border-radius:999px;background:var(--panel);color:var(--dim);font-size:13px}
+  .dot{width:8px;height:8px;border-radius:50%;background:var(--good);box-shadow:0 0 10px var(--good)}
+
+  /* app mock */
+  .mock{margin:54px auto 0;max-width:720px;background:linear-gradient(180deg,var(--panel),#12151c);border:1px solid var(--line);border-radius:18px;padding:18px;box-shadow:0 30px 80px -30px rgba(0,0,0,.7);text-align:left}
+  .mock .bar{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px}
+  .mock .chips{display:flex;gap:7px}.mock .chips i{width:11px;height:11px;border-radius:50%;display:block;background:var(--line)}
+  .tiles{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+  @media(max-width:600px){.tiles{grid-template-columns:repeat(2,1fr)}}
+  .tile{background:var(--panel2);border:1px solid var(--line);border-radius:13px;padding:13px}
+  .tile.me{border-color:var(--accent)}
+  .av{width:40px;height:40px;border-radius:11px;display:flex;align-items:center;justify-content:center;font-weight:800;color:#0a0d12}
+  .nm{font-weight:700;font-size:14px;margin-top:9px}
+  .rl{color:var(--dim);font-size:11px}
+  .meter{height:7px;border-radius:4px;background:#11141b;margin-top:9px;overflow:hidden}
+  .meter span{display:block;height:100%;border-radius:4px;background:linear-gradient(90deg,var(--accent),var(--accent2))}
+  .lv .meter span{animation:lvl 1.4s ease-in-out infinite alternate}
+  .lv2 .meter span{animation:lvl 1.1s .2s ease-in-out infinite alternate}
+  .lv3 .meter span{animation:lvl 1.7s .4s ease-in-out infinite alternate}
+  @keyframes lvl{from{width:18%}to{width:86%}}
+
+  /* sections */
+  section{padding:84px 0}
+  .center{text-align:center;max-width:680px;margin:0 auto 52px}
+  h2{font-size:clamp(28px,4vw,40px);font-weight:800;letter-spacing:-.5px}
+  .center p{color:var(--dim);margin-top:14px;font-size:16px}
+
+  .vs{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+  @media(max-width:720px){.vs{grid-template-columns:1fr}}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:26px}
+  .card.bad{border-color:#3a2a30}.card.good{border-color:rgba(90,209,196,.35)}
+  .card h3{font-size:18px;margin-bottom:14px}
+  .card ul{list-style:none;display:flex;flex-direction:column;gap:11px}
+  .card li{display:flex;gap:10px;color:var(--dim);font-size:14.5px}
+  .card li b{color:var(--txt);font-weight:600}
+  .mk{flex:none;width:20px;height:20px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800}
+  .mk.x{background:rgba(239,93,107,.15);color:#ef5d6b}.mk.o{background:rgba(90,209,196,.15);color:var(--accent)}
+
+  .feat{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
+  @media(max-width:900px){.feat{grid-template-columns:repeat(2,1fr)}}
+  @media(max-width:560px){.feat{grid-template-columns:1fr}}
+  .fcard{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:26px;transition:.18s}
+  .fcard:hover{border-color:var(--accent);transform:translateY(-3px)}
+  .ic{width:46px;height:46px;border-radius:13px;background:var(--panel2);display:flex;align-items:center;justify-content:center;margin-bottom:16px;border:1px solid var(--line)}
+  .ic svg{width:24px;height:24px;stroke:var(--accent);fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+  .fcard h3{font-size:17px;margin-bottom:8px}
+  .fcard p{color:var(--dim);font-size:14px}
+
+  .steps{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;counter-reset:s}
+  @media(max-width:720px){.steps{grid-template-columns:1fr}}
+  .step{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:26px;position:relative}
+  .step::before{counter-increment:s;content:counter(s);position:absolute;top:-16px;left:24px;width:34px;height:34px;border-radius:10px;background:linear-gradient(100deg,var(--accent),var(--accent2));color:#0a0d12;font-weight:800;display:flex;align-items:center;justify-content:center}
+  .step h3{margin:12px 0 8px;font-size:17px}.step p{color:var(--dim);font-size:14px}
+
+  .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:18px;text-align:center}
+  @media(max-width:680px){.stats{grid-template-columns:repeat(2,1fr)}}
+  .stat .n{font-size:34px;font-weight:800}
+  .stat .l{color:var(--dim);font-size:13px;margin-top:4px}
+
+  .final{text-align:center;background:linear-gradient(180deg,#12151c,var(--panel));border:1px solid var(--line);border-radius:22px;padding:60px 24px}
+  footer{border-top:1px solid var(--line);padding:40px 0;color:var(--dim);font-size:13px;text-align:center}
+  .warnnote{margin-top:16px;color:var(--warn);font-size:12.5px}
+</style>
+</head>
+<body>
+<nav><div class="wrap">
+  <div class="logo grad">Resonare</div>
+  <div class="navlinks">
+    <a href="#why">왜 Resonare</a>
+    <a href="#features">특징</a>
+    <a href="#how">작동 방식</a>
+    <a href="#download" class="btn btn-primary navcta" style="padding:9px 18px">다운로드</a>
+  </div>
+</div></nav>
+
+<header class="hero"><div class="wrap">
+  <div class="eyebrow">한국 스트리머를 위한 실시간 합주</div>
+  <h1><span class="grad">Resonare</span></h1>
+  <div class="tag">멀리 있어도, 같은 방에서 함께 노래하고 연주하다</div>
+  <p class="sub">싱크룸의 핑·연결 문제를 한국에서 해결합니다. 국내 P2P 직결 + 서울 릴레이 폴백 + ASIO 초저지연으로, 최대 10명이 한 합주방에서 실시간으로 맞춥니다.</p>
+  <div class="cta">
+    <a href="#download" class="btn btn-primary">⬇ 다운로드 (Windows)</a>
+    <a href="#how" class="btn btn-ghost">작동 방식 보기</a>
+  </div>
+  <div class="pill"><span class="dot"></span> 국내 직결(P2P) · 편도 ~12ms · Opus 64kbps</div>
+
+  <div class="mock">
+    <div class="bar">
+      <div style="font-weight:800" class="grad">Resonare</div>
+      <div style="color:var(--dim);font-size:12px">합주방 · 4명 · 연결 양호</div>
+      <div class="chips"><i></i><i></i><i></i></div>
+    </div>
+    <div class="tiles">
+      <div class="tile me lv"><div class="av" style="background:linear-gradient(135deg,#5ad1c4,#7c6cff)">나</div><div class="nm">나 👑</div><div class="rl">보컬 · 마이크</div><div class="meter"><span style="width:62%"></span></div></div>
+      <div class="tile lv2"><div class="av" style="background:linear-gradient(135deg,#f2c14e,#ef8e5d)">기</div><div class="nm">기타왕</div><div class="rl">일렉기타</div><div class="meter"><span style="width:48%"></span></div></div>
+      <div class="tile lv3"><div class="av" style="background:linear-gradient(135deg,#7c6cff,#b06cff)">드</div><div class="nm">드러머J</div><div class="rl">드럼</div><div class="meter"><span style="width:55%"></span></div></div>
+    </div>
+  </div>
+</div></header>
+
+<section id="why"><div class="wrap">
+  <div class="center"><div class="eyebrow">왜 Resonare인가</div><h2>P2P는 빠르다. 문제는 <span class="grad">연결과 폴백</span>이다.</h2>
+  <p>싱크룸도 오디오는 P2P입니다. 진짜 문제는 일본 서버 거리보다 — NAT 통과 실패 시 대안이 없다는 점. Resonare는 한국에 시그널링과 릴레이를 둬서 끝까지 붙게 합니다.</p></div>
+  <div class="vs">
+    <div class="card bad"><h3>😵 기존 (싱크룸 등)</h3><ul>
+      <li><span class="mk x">✕</span><span>시그널링/매칭 서버가 <b>일본</b> — 일부 구간 핑·지터</span></li>
+      <li><span class="mk x">✕</span><span>P2P 실패 시 <b>릴레이 폴백 없음</b> (CGNAT·대칭 NAT·인터넷아파트에서 연결 실패)</span></li>
+      <li><span class="mk x">✕</span><span>한국 환경(IPv6/CGNAT) 미고려</span></li>
+      <li><span class="mk x">✕</span><span>스트리머용 화면 노출 보호 약함</span></li>
+    </ul></div>
+    <div class="card good"><h3>✨ Resonare</h3><ul>
+      <li><span class="mk o">✓</span><span><b>국내 시그널링 + 서울 TURN 릴레이 폴백</b> — 직결 실패해도 한국 안에서 중계</span></li>
+      <li><span class="mk o">✓</span><span><b>P2P 풀메시 직결</b> 우선 · 편도 ~12ms</span></li>
+      <li><span class="mk o">✓</span><span><b>ASIO/WASAPI</b> 네이티브 초저지연 · Opus 64kbps</span></li>
+      <li><span class="mk o">✓</span><span><b>스트리머 보호</b> — 초대링크·비밀번호 기본 가림(👁 토글)</span></li>
+    </ul></div>
+  </div>
+</div></section>
+
+<section id="features" style="background:#0c0e13"><div class="wrap">
+  <div class="center"><div class="eyebrow">특징</div><h2>합주에 필요한 모든 것</h2></div>
+  <div class="feat">
+    <div class="fcard"><div class="ic"><svg viewBox="0 0 24 24"><path d="M13 2 4 14h6l-1 8 9-12h-6z"/></svg></div><h3>초저지연</h3><p>ASIO/WASAPI 네이티브 오디오. 편도 ~12ms로 브라우저보다 빠르고 안정적.</p></div>
+    <div class="fcard"><div class="ic"><svg viewBox="0 0 24 24"><circle cx="6" cy="6" r="2.5"/><circle cx="18" cy="6" r="2.5"/><circle cx="12" cy="18" r="2.5"/><path d="M6 6h12M6 6l6 12M18 6l-6 12"/></svg></div><h3>P2P 풀메시 · 최대 10명</h3><p>서버를 거치지 않는 직접 연결. 모두가 서로의 소리를 실시간으로 주고받습니다.</p></div>
+    <div class="fcard"><div class="ic"><svg viewBox="0 0 24 24"><path d="M12 3 5 6v5c0 4 3 7 7 9 4-2 7-5 7-9V6z"/></svg></div><h3>서울 릴레이 폴백</h3><p>직결이 막혀도 국내 릴레이로 자동 우회. "연결 안 됨"이 없습니다.</p></div>
+    <div class="fcard"><div class="ic"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c3 3 3 15 0 18M12 3c-3 3-3 15 0 18"/></svg></div><h3>4개 언어</h3><p>한국어 · English · 日本語 · 中文. 대기실·방 어디서든 즉시 전환.</p></div>
+    <div class="fcard"><div class="ic"><svg viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg></div><h3>스트리머 보호</h3><p>초대링크·비밀번호는 기본 가림 + 노출 없이 복사. 방송 사고 방지.</p></div>
+    <div class="fcard"><div class="ic"><svg viewBox="0 0 24 24"><path d="M3 12h3l2-7 4 18 3-11 2 4h4"/></svg></div><h3>실시간 레벨 & 믹스</h3><p>참가자별 레벨바와 개별 볼륨 조절. 누가 연주 중인지 한눈에.</p></div>
+  </div>
+</div></section>
+
+<section id="how"><div class="wrap">
+  <div class="center"><div class="eyebrow">작동 방식</div><h2>세 단계면 합주 시작</h2></div>
+  <div class="steps">
+    <div class="step"><h3>방 만들기</h3><p>닉네임·악기 선택 후 공개/비공개(비밀번호) 방을 생성합니다.</p></div>
+    <div class="step"><h3>링크 공유</h3><p>초대 링크를 친구에게 전달. 스트리머는 화면에 노출 없이 복사할 수 있어요.</p></div>
+    <div class="step"><h3>실시간 합주</h3><p>친구가 들어오면 P2P로 바로 연결. 레벨바를 보며 함께 맞춰 연주하세요.</p></div>
+  </div>
+</div></section>
+
+<section id="stats" style="background:#0c0e13"><div class="wrap"><div class="stats">
+  <div class="stat"><div class="n grad">~12ms</div><div class="l">편도 지연(국내 직결)</div></div>
+  <div class="stat"><div class="n grad">10명</div><div class="l">최대 합주 인원</div></div>
+  <div class="stat"><div class="n grad">P2P</div><div class="l">서버 미경유 직결</div></div>
+  <div class="stat"><div class="n grad">서울</div><div class="l">릴레이 폴백 위치</div></div>
+</div></div></section>
+
+<section id="download"><div class="wrap"><div class="final">
+  <div class="eyebrow">지금 시작</div>
+  <h2 style="margin-top:10px">친구와 같은 방에서, 실시간으로</h2>
+  <p style="color:var(--dim);max-width:560px;margin:14px auto 0">Windows용 네이티브 앱. 다운로드해서 실행하고 방을 만들면 끝.</p>
+  <div class="cta" style="justify-content:center;margin-top:28px">
+    <a href="#" class="btn btn-primary">⬇ Windows 다운로드</a>
+    <a href="https://github.com/" class="btn btn-ghost">GitHub</a>
+  </div>
+  <div class="warnnote">⚠ 권장 환경: 헤드폰·이어폰 필수 · 유선 인터넷 권장 · 5~6명 권장(최대 10명)</div>
+</div></div></section>
+
+<footer><div class="wrap">
+  <div class="logo grad" style="font-size:18px;margin-bottom:8px">Resonare</div>
+  실시간 원격 합주 · 한국 P2P · ASIO 초저지연<br/>
+  © 2026 Resonare · 한국 스트리머를 위한 합주 플랫폼
+</div></footer>
+</body>
+</html>
